@@ -1,0 +1,19 @@
+space world.hello
+
+//import mc.Mitchellbrine.mava.io.SysOut
+import mc.Mitchellbrine.mava.Run
+
+class[view] HelloWorld
+
+	method[global] main(string args)
+		//SysOut.print("Hello World")
+		//Run.hello()
+		//class.test()
+		run()
+	terminate
+
+	method[global] run()
+		class.test()
+	terminate
+		
+terminate
