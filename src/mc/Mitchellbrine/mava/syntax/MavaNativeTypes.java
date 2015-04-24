@@ -1,7 +1,5 @@
 package mc.Mitchellbrine.mava.syntax;
 
-import java.lang.reflect.Type;
-
 public enum MavaNativeTypes {
 
 	String("string", ""),
@@ -9,7 +7,8 @@ public enum MavaNativeTypes {
 	Float("float", 0.0f,Float.class,"parseFloat"),
 	Double("double", 0.0,Double.class,"parseDouble"),
 	Long("long", 0, Long.class,"parseLong"),
-	Short("short", 0, Short.class,"parseShort");
+	Short("short", 0, Short.class,"parseShort"),
+	Boolean("boolean",false,Boolean.class,"parseBoolean");
 	
 	public String inCodeReference;
 	public Object defaultValue;
@@ -39,6 +38,15 @@ public enum MavaNativeTypes {
 			}
 		}
 		return oldObject;
+	}
+
+	public boolean isParsable(String toParse) {
+		try {
+			typeClass.getMethod(parseMethod, toParse.getClass()).invoke(this, toParse);
+		} catch (Exception ex) {
+			return false;
+		}
+		return true;
 	}
 	
 }

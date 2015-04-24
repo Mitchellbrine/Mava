@@ -1,7 +1,11 @@
 package mc.Mitchellbrine.mava.objects;
 
-public class MavaObject {
+import mc.Mitchellbrine.mava.syntax.MavaClass;
 
-	
+public abstract class MavaObject {
+
+	public MavaClass getClazz() {
+		return null;
+	}
 	
 }

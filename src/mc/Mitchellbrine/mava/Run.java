@@ -1,10 +1,11 @@
 package mc.Mitchellbrine.mava;
 
+import mc.Mitchellbrine.mava.ex.ClassCreationException;
 import mc.Mitchellbrine.mava.syntax.MavaClass;
 import mc.Mitchellbrine.mava.syntax.MavaMethod;
-import mc.Mitchellbrine.mava.syntax.MavaVariable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.zip.ZipFile;
 public class Run {
 
 	public static Set<MavaClass> classes;
+	private static List<String> scheduledNamespaces;
+	private static List<MavaClass> nameSpaceClasses;
+	private static int loadProcess = -1;
 
 	public static void main(String args[]) {
 		boolean log = false;
@@ -36,6 +40,10 @@ public class Run {
 		File file = new File(program);
 
 		classes = new HashSet<MavaClass>();
+		scheduledNamespaces = new ArrayList<String>();
+		nameSpaceClasses = new ArrayList<MavaClass>();
+
+		loadProcess = 0;
 
 		if (file.getName().endsWith(".zip")) {
 			try {
@@ -56,6 +64,30 @@ public class Run {
 				ex.printStackTrace();
 			}
 		}
+
+		loadProcess = 1;
+
+		for (int i = 0; i < scheduledNamespaces.size();i++) {
+			String namespace = scheduledNamespaces.get(i);
+			MavaClass clazz = nameSpaceClasses.get(i);
+			MavaClass newClazz = null;
+			try {
+				Class javaClazz = Class.forName(namespace);
+				if (javaClazz != null)
+					newClazz = new MavaClass(javaClazz);
+			} catch (ClassNotFoundException ex) {
+				// Shh. Don't throw the exception...
+				newClazz = Run.getClass(clazz,namespace);
+			}
+			if (newClazz == null)
+				throw new ClassCreationException(String.format("Class %s does not exist", namespace));
+			clazz.addVisibleClass(newClazz);
+		}
+
+		scheduledNamespaces.clear();
+		nameSpaceClasses.clear();
+
+		loadProcess = 2;
 
 		for (MavaClass clazz : classes) {
 			for (MavaMethod method : clazz.getMethods()) {
@@ -81,6 +113,19 @@ public class Run {
 			}
 		}
 		
+	}
+
+	public static MavaClass getClass(MavaClass clasz, String namespace) {
+		for (MavaClass clazz : classes) {
+			if ((clazz.space + "." + clazz.name).equals(namespace))
+				return clazz;
+		}
+		if (loadProcess == 0) {
+			//System.out.println("Mava class " + namespace + " was not found. Will search after class addition");
+			scheduledNamespaces.add(namespace);
+			nameSpaceClasses.add(clasz);
+		}
+		return null;
 	}
 
 	public static MavaClass getClass(String namespace) {

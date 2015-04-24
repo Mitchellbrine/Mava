@@ -31,14 +31,17 @@ public class Parser {
 			try {
 				Class javaClazz = Class.forName(string.substring(string.indexOf(" ") + 1));
 				if (javaClazz != null)
-				newClazz = new MavaClass(javaClazz);
+					newClazz = new MavaClass(javaClazz);
 			} catch (ClassNotFoundException ex) {
 				// Shh. Don't throw the exception...
-				newClazz = Run.getClass(string.substring(string.indexOf(" ")));
+				newClazz = Run.getClass(clazz,string.substring(string.indexOf(" ") + 1));
 			}
-			if (newClazz == null)
-				throw new RuntimeException(String.format("Class %s does not exist", string.substring(string.indexOf(" ") + 1)));
-			clazz.addVisibleClass(newClazz);
+			/*if (newClazz == null) {
+				System.err.println(String.format("Class %s does not exist", string.substring(string.indexOf(" ") + 1)));
+			} else*/
+			if (newClazz != null){
+				clazz.addVisibleClass(newClazz);
+			}
 		}
 		if (string.replaceAll("\t","").startsWith("method")) {
 			clazz.addMethod(readMethod(clazz, string, linesOfCode));
@@ -68,11 +71,19 @@ public class Parser {
 			} while (lines.get(index).length() - lines.get(index).replaceAll("\t", "").length() > tabs && !lines.get(index).replaceAll("\t", "").equalsIgnoreCase("terminate"));
 
 			MavaMethod method = new MavaMethod(modifier, withoutModifier[1], methodLines);
-			if (string.substring(string.indexOf("(")).replaceAll("\\(", "").replaceAll("\\)", "").split(", ").length > 1) {
+			if (string.substring(string.indexOf("(")).replaceAll("\\(", "").replaceAll("\\)", "").split(", ").length > 0) {
 				for (String variables : string.substring(string.indexOf("(")).replaceAll("\\(", "").replaceAll("\\)", "").split(", ")) {
+					//System.out.println(variables);
 					String[] variableMeta = variables.split(" ");
-					String className = variableMeta[0];
-					String variableName = variableMeta[1];
+					String className = "";
+					String variableName = "";
+					try {
+						className = variableMeta[0];
+						variableName = variableMeta[1];
+					} catch (ArrayIndexOutOfBoundsException ex) {
+						// TROLOLOLOLOLOLOLOLOLOL
+					}
+					//System.out.println(className + " " + variableName);
 					method.addVariable(new MavaVariable(className, variableName));
 				}
 			}
@@ -102,6 +113,9 @@ public class Parser {
 					}
 				}
 				if (method1 != null) {
+					if (line.indexOf("(") + 1 != line.indexOf(")")) {
+
+					}
 					method1.invoke();
 					continue;
 				}
@@ -133,7 +147,8 @@ public class Parser {
 								throw new RuntimeException(String.format("Class %s does not exist", line.substring(0, line.indexOf("."))));
 							try {
 								if (!line.substring(line.indexOf("(") + 1, line.indexOf(")")).isEmpty()) {
-									mavaClass.invokeMethodWithName(line.substring(line.indexOf(".") + 1, line.indexOf("(")), line.substring(line.indexOf("(") + 1, line.indexOf(")")).split(", "));
+									mavaClass.parseNatives(line.substring(line.indexOf("(") + 1, line.indexOf(")")));
+									mavaClass.invokeMethodWithName(line.substring(line.indexOf(".") + 1, line.indexOf("(")),true);
 								} else {
 									mavaClass.invokeMethodWithName(line.substring(line.indexOf(".") + 1, line.indexOf("(")));
 								}

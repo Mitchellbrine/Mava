@@ -1,15 +1,15 @@
 space world.hello
 
-//import mc.Mitchellbrine.mava.io.SysOut
+import mc.Mitchellbrine.mava.lang.SysOut
 import mc.Mitchellbrine.mava.Run
 
 class[view] HelloWorld
 
 	method[global] main(string args)
-		//SysOut.print("Hello World")
+		SysOut.print("smittywerbenmanjenson")
 		//Run.hello()
 		//class.test()
-		run()
+		//run()
 	terminate
 
 	method[global] run()

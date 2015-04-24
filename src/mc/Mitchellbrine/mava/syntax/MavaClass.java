@@ -28,6 +28,7 @@ public class MavaClass {
 
 	private List<Method> javaMethods;
 	public boolean isJavaClass;
+	private Object[] params = null;
 
 	public MavaClass() {
 		variables = new HashSet<MavaVariable>();
@@ -126,8 +127,62 @@ public class MavaClass {
 		}
 	}
 
+	public void invokeMethodWithName(String name, boolean useParams) throws Exception {
+		if (isJavaClass) {
+			for (Method method : javaMethods) {
+				if (method.getName().equals(name)) {
+					method.invoke(this, params);
+				}
+			}
+		} else {
+			throw new RuntimeException("Java-only method called within Mava. Shouldn't be possible.");
+		}
+	}
+
+	public void parseNatives(String params) {
+		this.params = new Object[params.split(", ").length];
+		for (int i = 0; i < params.split(", ").length;i++) {
+			String string = params.split(", ")[i];
+			if (string.startsWith("\"") && string.endsWith("\"")) {
+				this.params[i] = string.replaceAll("\"","");
+				continue;
+			}
+			for (MavaNativeTypes types : MavaNativeTypes.values()) {
+				if (types.isParsable(string)) {
+					try {
+						this.params[i] = types.parseValue(string);
+					} catch (Exception ex) {
+						throw new RuntimeException("Error parsing natives",ex);
+					}
+				}
+			}
+		}
+	}
+
 	public static void test() {
 		System.out.println("Test complete!");
+	}
+
+	public MavaMethod getMethod(String methodName, Class<String>... arguments) {
+		for (MavaMethod method : methods) {
+			if (method.identifier.equals(methodName)) {
+				boolean correctArguments = false;
+				if (method.getVariables() == null) {
+					if (arguments.length > 0)
+						throw new IllegalArgumentException(String.format("Incorrect arguments for %s",methodName));
+					else
+						return method;
+				}
+				for (int i = 0; i < method.getVariables().size();i++) {
+					if (i > 0 && !correctArguments)
+						break;
+					correctArguments = method.getVariables().get(i).className.equals(arguments[i]);
+				}
+				if (correctArguments)
+					return method;
+			}
+		}
+		return null;
 	}
 
 }

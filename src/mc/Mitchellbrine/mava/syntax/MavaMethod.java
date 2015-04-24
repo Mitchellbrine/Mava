@@ -20,6 +20,7 @@ public class MavaMethod {
 		this.modifiers = modifiers;
 		this.identifier = id;
 		this.body = methodBody;
+		this.variables = new ArrayList<MavaVariable>();
 	}
 
 	public void addVariable(MavaVariable variable) {
@@ -56,8 +57,7 @@ public class MavaMethod {
 	}
 
 	public List<MavaVariable> getVariables() {
-		return variables == null ? null : new ArrayList<MavaVariable>(variables) {
-		};
+		return variables == null ? null : new ArrayList<MavaVariable>(variables);
 	}
 
 	public MavaClass getClazz() {
@@ -68,6 +68,17 @@ public class MavaMethod {
 		if (modifiers != null)
 			return;
 		modifiers = modifier;
+	}
+
+	public boolean setVariable(String varName, Object varValue) {
+		for (MavaVariable variable : variables) {
+			if (variable.variableName.equals(varName)) {
+				if (variable.className.equals(varValue.getClass().getName())) {
+					variable.set(varValue);
+				}
+			}
+		}
+		return false;
 	}
 	
 }

@@ -15,6 +15,7 @@ public class MavaVariable {
 		for (MavaNativeTypes types : MavaNativeTypes.values()) {
 			if (types.inCodeReference.equals(className)) {
 				type = types;
+				break;
 			}
 		}
 		this.isNative = type != null;
@@ -29,15 +30,36 @@ public class MavaVariable {
 		return value;
 	}
 
-	public void set(String value) {
+	public void set(Object value) {
 		if (isNative) {
 			try {
-				this.value = nativeType.parseValue(value);
+				this.value = nativeType.parseValue((String)value);
 			} catch (Exception ex) {
 				throw new RuntimeException("A native was assigned an incorrect parser. This should be impossible and is EXTREMELY BAD.",ex);
 			}
 		} else {
-			// TODO: Handle other types and figure out how to parse with them.
+			// TODO: Handle other types and figure out how to parse with them. For now, let's just set it without caution.
+			try {
+				if (value.getClass() == Class.forName(className)) {
+					this.value = value;
+				}
+			} catch (Exception ex) {
+				throw new RuntimeException(String.format("The classes throw an exception"),ex);
+			}
+			/*
+			if (Run.getClass(className) != null) {
+				// This is a Mava class, not a java one.
+				MavaClass clazz = Run.getClass(className);
+				if ()
+			} else {
+				// This is a Java type, we can handle this, right?
+			}
+			*/
 		}
+	}
+
+	@Override
+	public String toString() {
+		return value.toString();
 	}
 }
